@@ -1,72 +1,91 @@
 import random
-print("A <- IZQUIERDA --- DERECHA -> B")
+
+# Clase que representa una habitación
 class Habitacion:
     def __init__(self, nombre):
         self.nombre = nombre
-        self.estado = random.choice(["Limpio", "Sucio"])
+        self.limpia = random.choice([True, False])
+        self.ocupada = random.choice([True, False])
 
     def limpiar(self):
-        self.estado = "Limpio"
+        self.limpia = True
+        print(f"La habitación {self.nombre} ha sido limpiada.")
 
-    def __str__(self):
-        return f"Habitación {self.nombre}: {self.estado}"
+    def esta_limpia(self):
+        return self.limpia
 
+    def esta_ocupada(self):
+        return self.ocupada
+
+    def desocupar(self):
+        self.ocupada = False
+        print(f"La habitación {self.nombre} ahora está desocupada.")
+
+# Clase que representa la aspiradora
 class Aspiradora:
-    def __init__(self, habitacion_actual):
-        self.habitacion_actual = habitacion_actual
-        self.visitas = {"A": False, "B": False}
+    def __init__(self, habitacion_inicial):
+        self.habitacion_actual = habitacion_inicial
+        print(f"La aspiradora inicia en la habitación {habitacion_inicial.nombre}.")
 
-    def mover(self, nueva_habitacion):
-        self.habitacion_actual = nueva_habitacion
-        self.visitas[nueva_habitacion.nombre] = True
+    def mover_a(self, habitacion):
+        self.habitacion_actual = habitacion
+        print(f"La aspiradora se ha movido a la habitación {habitacion.nombre}.")
 
-    def limpiar(self):
-        self.habitacion_actual.limpiar()
-
-    def decidir_accion(self):
-        if self.habitacion_actual.estado == "Sucio":
-            return "Aspirar"
-        elif self.habitacion_actual.nombre == "A":
-            return "Derecha"
+    def intentar_limpiar_habitacion(self):
+        if self.habitacion_actual.esta_ocupada():
+            print(f"La habitación {self.habitacion_actual.nombre} está ocupada y no se puede limpiar en este momento.")
+            return False
+        elif self.habitacion_actual.esta_limpia():
+            print(f"La habitación {self.habitacion_actual.nombre} ya está limpia.")
+            return True
         else:
-            return "Izquierda"
+            self.habitacion_actual.limpiar()
+            return True
 
-class Simulacion:
-    def __init__(self):
-        self.habitacion_a = Habitacion("A")
-        self.habitacion_b = Habitacion("B")
-        self.aspiradora = Aspiradora(random.choice([self.habitacion_a, self.habitacion_b]))
+# Función principal que simula el proceso de limpieza
+def simular_proceso_limpieza():
+    # Crear habitaciones
+    habitacion_a = Habitacion("A")
+    habitacion_b = Habitacion("B")
+    
+    # Mostrar los estados iniciales de las habitaciones
+    print(f"Estado inicial:")
+    print(f"Habitación A: {'Limpia' if habitacion_a.esta_limpia() else 'Sucia'}, {'Ocupada' if habitacion_a.esta_ocupada() else 'Desocupada'}")
+    print(f"Habitación B: {'Limpia' if habitacion_b.esta_limpia() else 'Sucia'}, {'Ocupada' if habitacion_b.esta_ocupada() else 'Desocupada'}")
+    
+    # Crear aspiradora en una habitación aleatoria
+    habitacion_inicial = random.choice([habitacion_a, habitacion_b])
+    aspiradora = Aspiradora(habitacion_inicial)
+    
+    # Control de habitaciones revisadas
+    habitaciones_revisadas = {habitacion_a: False, habitacion_b: False}
+    habitaciones_ocupadas = []
 
-    def ejecutar(self):
-        print("Estado inicial:")
-        self.mostrar_estado()
+    # Proceso de limpieza
+    while True:
+        print(f"\nLa aspiradora está en la habitación {aspiradora.habitacion_actual.nombre}.")
+        
+        # Intentar limpiar la habitación actual
+        if aspiradora.intentar_limpiar_habitacion():
+            habitaciones_revisadas[aspiradora.habitacion_actual] = True
+        else:
+            habitaciones_ocupadas.append(aspiradora.habitacion_actual)
+        
+        # Moverse a la otra habitación
+        if aspiradora.habitacion_actual == habitacion_a:
+            aspiradora.mover_a(habitacion_b)
+        else:
+            aspiradora.mover_a(habitacion_a)
 
-        while not self.esta_todo_verificado():
-            accion = self.aspiradora.decidir_accion()
-            print(f"\nAcción: {accion}")
+        # Desocupar la habitación anterior si estaba ocupada
+        if habitaciones_ocupadas:
+            habitaciones_ocupadas[0].desocupar()
+            habitaciones_ocupadas.pop(0)
 
-            if accion == "Aspirar":
-                self.aspiradora.limpiar()
-                print(f"Limpiando {self.aspiradora.habitacion_actual}")
-            elif accion == "Derecha":
-                self.aspiradora.mover(self.habitacion_b)
-                print("Moviendo a la derecha (B)")
-            elif accion == "Izquierda":
-                self.aspiradora.mover(self.habitacion_a)
-                print("Moviendo a la izquierda (A)")
+        # Verificar si ambas habitaciones han sido revisadas y están limpias
+        if all(habitaciones_revisadas.values()) and habitacion_a.esta_limpia() and habitacion_b.esta_limpia():
+            print("\nAmbas habitaciones están limpias. Proceso terminado.")
+            break
 
-            self.mostrar_estado()
-
-        print("\n¡Todas las habitaciones han sido verificadas y están limpias!")
-
-    def esta_todo_verificado(self):
-        return self.aspiradora.visitas["A"] and self.aspiradora.visitas["B"] and self.habitacion_a.estado == "Limpio" and self.habitacion_b.estado == "Limpio"
-
-    def mostrar_estado(self):
-        print(self.habitacion_a)
-        print(self.habitacion_b)
-        print(f"Aspiradora en: {self.aspiradora.habitacion_actual.nombre}")
-
-if __name__ == "__main__":
-    simulacion = Simulacion()
-    simulacion.ejecutar()
+# Ejecutar la simulación
+simular_proceso_limpieza()
