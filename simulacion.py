@@ -2,7 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import random
 
-# Clase que representa una habitación
+
 class Habitacion:
     def __init__(self, nombre):
         self.nombre = nombre
@@ -23,7 +23,6 @@ class Habitacion:
         self.ocupada = False
         print(f"La habitación {self.nombre} ahora está desocupada.")
 
-# Clase que representa la aspiradora
 class Aspiradora:
     def __init__(self, habitacion_inicial):
         self.habitacion_actual = habitacion_inicial
@@ -44,23 +43,22 @@ class Aspiradora:
             self.habitacion_actual.limpiar()
             return True
 
-# Clase para la interfaz gráfica
+
 class SimulacionGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Simulación de Aspiradora")
         self.root.geometry("800x400")
 
-        # Cargar imágenes
+
         self.img_sucio = ImageTk.PhotoImage(Image.open("basura.png").resize((100, 100)))
         self.img_aspiradora = ImageTk.PhotoImage(Image.open("aspiradora.png").resize((100, 100)))
 
-        # Crear las habitaciones
+
         self.habitacion_a = Habitacion("A")
         self.habitacion_b = Habitacion("B")
         self.aspiradora = Aspiradora(random.choice([self.habitacion_a, self.habitacion_b]))
 
-        # Etiquetas para las habitaciones
         self.label_a = tk.Label(root, text="Habitación A", font=("Helvetica", 16))
         self.label_a.grid(row=0, column=0, padx=20, pady=20)
         self.label_a_img = tk.Label(root)
@@ -71,35 +69,32 @@ class SimulacionGUI:
         self.label_b_img = tk.Label(root)
         self.label_b_img.grid(row=1, column=2)
 
-        # Etiqueta para la aspiradora
         self.label_aspiradora = tk.Label(root, image=self.img_aspiradora)
         self.label_aspiradora.grid(row=1, column=1)
 
-        # Etiqueta para mostrar la acción actual
         self.label_accion = tk.Label(root, text="", font=("Helvetica", 14))
         self.label_accion.grid(row=2, column=1, pady=20)
 
-        # Mostrar estado inicial
         self.mostrar_estado()
 
-        # Botón para iniciar la simulación
+
         self.btn_start = tk.Button(root, text="Iniciar Simulación", command=self.ejecutar)
         self.btn_start.grid(row=3, column=1, pady=20)
 
     def mostrar_estado(self):
-        # Actualizar habitación A
+
         if not self.habitacion_a.esta_limpia():
             self.label_a_img.config(image=self.img_sucio)
         else:
             self.label_a_img.config(image="")
 
-        # Actualizar habitación B
+
         if not self.habitacion_b.esta_limpia():
             self.label_b_img.config(image=self.img_sucio)
         else:
             self.label_b_img.config(image="")
 
-        # Mover la aspiradora a la posición correcta
+
         if self.aspiradora.habitacion_actual.nombre == "A":
             self.label_aspiradora.grid(row=1, column=0)
         else:
@@ -109,7 +104,7 @@ class SimulacionGUI:
         self.label_accion.config(text=mensaje)
 
     def mover_aspiradora(self):
-        # Mover a la otra habitación
+
         if self.aspiradora.habitacion_actual == self.habitacion_a:
             self.aspiradora.mover_a(self.habitacion_b)
         else:
@@ -126,7 +121,7 @@ class SimulacionGUI:
         while True:
             print(f"\nLa aspiradora está en la habitación {self.aspiradora.habitacion_actual.nombre}.")
 
-            # Intentar limpiar la habitación actual si está sucia
+
             if not self.aspiradora.habitacion_actual.esta_limpia():
                 if self.aspiradora.intentar_limpiar_habitacion():
                     habitaciones_revisadas[self.aspiradora.habitacion_actual] = True
@@ -141,15 +136,15 @@ class SimulacionGUI:
             self.mostrar_estado()
             self.root.after(1500)
 
-            # Mover a la otra habitación
+
             self.mover_aspiradora()
 
-            # Desocupar la habitación anterior si estaba ocupada
+
             if habitaciones_ocupadas:
                 habitaciones_ocupadas[0].desocupar()
                 habitaciones_ocupadas.pop(0)
 
-            # Verificar si ambas habitaciones han sido revisadas y están limpias
+
             if all(habitaciones_revisadas.values()) and self.habitacion_a.esta_limpia() and self.habitacion_b.esta_limpia():
                 self.actualizar_accion("¡Ambas habitaciones están limpias! Proceso terminado.")
                 break
